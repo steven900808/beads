@@ -1,3 +1,4 @@
+# 關閉程式都用ui中的關閉程式不然就要關掉整個terminal
 from sqlite3 import Time
 import numpy as np
 import tkinter as tk
@@ -16,16 +17,17 @@ from calendar import c
 import numpy as np
 from ctypes import *
 import time
-orgspeedsetting = 100
-orgaccelerationsetting = 80
-timesleep = 0.8  # 手臂移動時間間隔
+orgspeedsetting = 100  # 手臂移動速度
+orgaccelerationsetting = 80  # 手臂移動加速度
+timesleep = 0.8  # 手臂移動每個點位時間間隔
 
 delay = 0.33  # delay plate
 #################################### 測試時註解##########################################################################測試時註解###############################################################
-
+# 連接arduino之序列副設定
 # s=serial.Serial("/dev/ttyACM0",9600)
 
 ################################### 測試時註解##########################################################################測試時註解###############################################################
+# 手臂移動程式設定
 # so_file = "/home/showmay/HIWIN/Modbus_Hiwin/src/libmodbus_ROS/src/My_test/Hiwin_API.so"
 # modbus = CDLL(so_file)
 # modbus.DO.argtypes = [c_int, c_int]
@@ -44,11 +46,12 @@ delay = 0.33  # delay plate
 #             break
 #################################### 測試時註解##########################################################################測試時註解###############################################################
 '''
-cd "/home/showmay/HIWIN/Modbus_Hiwin/src/libmodbus_ROS/src/My_test"
+cd "/home/showmay/HIWIN/Modbus_Hiwin/src/libmodbus_ROS/src/My_test"   
 '''
 base_point = [[0],  # org座標系的原點[0]
-              [-15.591, 481.798, 260.271, 66.848, 3.720, 83.702],  # 側邊傾斜裝填org[1]
-              [0, 368, 293.5, -180, 0, 90]  # 手臂回正org[2]
+              [-15.591, 481.798, 260.271, 66.848, 3.720,
+                  83.702],  # 側邊傾斜裝填org[1] 手臂預設座標，寫死ㄉ
+              [0, 368, 293.5, -180, 0, 90]  # 手臂回正org[2] 手臂預設座標，寫死ㄉ
 
               ]
 
@@ -88,7 +91,7 @@ first_place[5] = firstplace_C
 count_palte = [0, 0, 0, 0, 0]
 
 
-def entryxy():
+def entryxy():  # 校正點位txt儲存
     global result_movex
     global result_movey
     global firstplace_X
@@ -115,7 +118,7 @@ def entryxy():
         z.write("\n")
 
 
-def entryxy_zero():
+def entryxy_zero():  # 校正點位txt儲存
     global result_movex_zero
     global result_movey_zero
     global firstplace_X_zero
@@ -143,7 +146,7 @@ def entryxy_zero():
         z.write("\n")
 
 
-def entryfirstplace():
+def entryfirstplace():  # 點位txt讀取b軸-3
     global var_firstplacex
     global var_firstplacey
     global var_firstplacez
@@ -201,7 +204,7 @@ def entryfirstplace():
         firstplace_C = float(firstplace_C)
 
 
-def entryfirstplace_zero():
+def entryfirstplace_zero():  # 點位txt讀取b軸0
     global var_firstplacex_zero
     global var_firstplacey_zero
     global var_firstplacez_zero
@@ -262,7 +265,7 @@ def entryfirstplace_zero():
 # 5555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555
 
 
-def main_fiveplatebutton(event):
+def main_fiveplatebutton(event):  # ui中主程式(主程式排五拼豆) 進行點位移動
     s.write('I'.encode())
     s.write('I'.encode())
     global move_amount
@@ -360,6 +363,7 @@ def main_fiveplatebutton(event):
             first_place = [
                 firstplace_X, (firstplace_Y), (firstplace_Z+5), firstplace_A, (firstplace_B), firstplace_C]
             new_point = first_place
+            # 程式判斷從第一點位起當遇到地一個不為零的數字，便取出其後共5個數字成為myservo馬達所需轉動對象。若下屆比賽需更改為不分色擺放，將if (myArray[i][j] != 0)變成if (myArray[i][j] == 1然後繼續往下面改拼豆擺放的指令就好
             if (myArray[i][j] != 0):
                 myservo8 = myArray[[i], [j]]
                 myservo9 = myArray[[i], [j+2]]
@@ -374,6 +378,7 @@ def main_fiveplatebutton(event):
                 print(
                     "手臂已移動至定點=======================================================>", new_point)
                 move_amount += 1
+                # 當擺放完成後便將拼豆矩陣此次擺放拚豆，更改為零，ex:此次拼豆擺放[[3],[1],[3],[0],[5]]則擺放完成變為[[0],[0],[0],[0],[0]]
                 myArray[[i], [j, j+2, j+4, j+6, j+8]] = 0
                 putdown_updown_fiveplate(
                     new_point, myservo8, myservo9, myservo10, myservo11, myservo12, count_palte, j, i)
@@ -381,7 +386,7 @@ def main_fiveplatebutton(event):
 # 5555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555
 
 
-def putdown_updown_fiveplate(new_point, myservo8, myservo9, myservo10, myservo11, myservo12, count_palte, j, i):
+def putdown_updown_fiveplate(new_point, myservo8, myservo9, myservo10, myservo11, myservo12, count_palte, j, i):  # 點位移動後進行拼豆擺放
     global timesleep
     global sleep
     global delay
@@ -486,7 +491,7 @@ def putdown_updown_fiveplate(new_point, myservo8, myservo9, myservo10, myservo11
 # testttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt
 
 
-def test_fiveplatebutton(event):
+def test_fiveplatebutton(event):     # ui中主程式(測試矩陣) 進行點位移動測試
     global move_amount
     move_amount = 1
     global i
@@ -579,7 +584,7 @@ def test_fiveplatebutton(event):
     print("end")
 
 
-def putdown_updown_fiveplate_test(new_point):
+def putdown_updown_fiveplate_test(new_point):  # 測試矩陣的測試擺放
     global timesleep
     new_point[2] = new_point[2]-5
     PTP_Move_org(new_point)
@@ -593,7 +598,7 @@ def putdown_updown_fiveplate_test(new_point):
 # testttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt
 
 
-def fillbutton(event):
+def fillbutton(event):  # 傾斜功能
     s.write('O'.encode())  # outoutoutoutoutoutoutoutoutout
     time.sleep(2)
     PTP_Move_org(base_point[1], speed=60, acceleration=70)
@@ -601,7 +606,7 @@ def fillbutton(event):
     print("側邊傾斜", base_point[1])
 
 
-def fillbacknormalbutton(event):
+def fillbacknormalbutton(event):  # 回正功能
     PTP_Move_org(base_point[2], speed=100, acceleration=100)
     print("回正", base_point[2])
 
@@ -609,7 +614,7 @@ def fillbacknormalbutton(event):
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 
-def movetofirstplace(event):
+def movetofirstplace(event):  # 點位計算中移動至第一點位做檢查
     global firstplace_X
     global firstplace_Y
     global firstplace_Z
@@ -636,7 +641,7 @@ def movetofirstplace(event):
     PTP_Move_org(first_place)
 
 
-def moverightdown_button(event):
+def moverightdown_button(event):  # 點位計算中移動至第一點位的對角點位做檢查
     with open('/home/showmay/Desktop/simulatoer_test/XYZ_result.txt', 'r') as x:
         line = x.readlines()
         firstplace_X = line[0]
@@ -667,7 +672,7 @@ def moverightdown_button(event):
     print("move diagonal", a)
 
 
-def minor3_button(event):
+def minor3_button(event):  # 點位計算中移動至第一點位b軸-3做檢查
     with open('/home/showmay/Desktop/simulatoer_test/XYZ_zero_result.txt', 'r') as x:
         line = x.readlines()
         firstplace_X = line[0]
@@ -692,7 +697,7 @@ def minor3_button(event):
     print(first_place)
 
 
-def moverightdown_zero_button(event):
+def moverightdown_zero_button(event):  # 點位計算中移動至第一點位的b軸-3的對角點位做檢查
     with open('/home/showmay/Desktop/simulatoer_test/XYZ_zero_result.txt', 'r') as x:
         line = x.readlines()
         firstplace_X = line[0]
@@ -723,7 +728,7 @@ def moverightdown_zero_button(event):
     print("move diagonal", a)
 
 
-def shutdownbutton(event):
+def shutdownbutton(event):  # 關閉程式
     os._exit(0)
 
 
@@ -758,7 +763,7 @@ def fillbacknormalbutton_close(event):
     os._exit(0)
 
 
-def draw_fiveplate(new_point):
+def draw_fiveplate(new_point):  # 擺放拚豆時畫出拚豆寶寶ㄉ功能，檢查程式有沒有露點位擺放之類ㄉ
     if (myArray[i][j] == 1):
         plt.plot(j, i, color='tomato', marker='o')
     if (myArray[i][j] == 2):
@@ -811,7 +816,7 @@ def draw_fiveplate(new_point):
         plt.plot(j+8, i, 'wo')
 
 
-def count_fiveplatebutton(event):
+def count_fiveplatebutton(event):  # 偷吃步的部分檢查拚豆總數及填充個數，UI主程式中五轉盤填充的功能
     m = 1
     for i in range(0, 28):
         for j in range(0, 29):
