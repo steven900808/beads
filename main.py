@@ -266,7 +266,7 @@ def entryfirstplace_zero():  # 點位txt讀取b軸0
 
 
 def main_fiveplatebutton(event):  # ui中主程式(主程式排五拼豆) 進行點位移動
-    s.write('I'.encode())
+    s.write('I'.encode())  # 傳送指令至arduino
     s.write('I'.encode())
     global move_amount
     global timesleep
@@ -308,6 +308,9 @@ def main_fiveplatebutton(event):  # ui中主程式(主程式排五拼豆) 進行
             ############################################################################################################
             # 抬高大於base_point#抬高大於base_point#抬高大於base_point#抬高大於base_point#抬高大於base_point#抬高大於base_point#抬高大於base_point#抬高大於base_point
             new_point = first_place
+            # 程式判斷從第一點位起當遇到地一個不為零的數字，便取出其後共5個數字成為myservo馬達所需轉動對象
+            # 程式目前是只要矩陣中有拚豆就會執行手臂移動及轉動馬達擺放(不等於0)
+            # 若下屆比賽需更改為不分色擺放，將if (myArray[i][j] != 0)變成if (myArray[i][j] == 1 ......  增加其他拼豆的條件然後繼續往下面改拼豆擺放的指令就好
             if (myArray[i][j] != 0):
                 myservo8 = myArray[[i], [j]]
                 myservo9 = myArray[[i], [j+2]]
@@ -333,10 +336,12 @@ def main_fiveplatebutton(event):  # ui中主程式(主程式排五拼豆) 進行
                     print(
                         "手臂已移動至定點=======================================================>", new_point)
                     move_amount += 1
+                    # 當擺放完成後便將拼豆矩陣此次擺放拚豆，更改為零，ex:此次拼豆擺放[[3],[1],[3],[0],[5]]則擺放完成變為[[0],[0],[0],[0],[0]]
                     myArray[[i], [j, j+2, j+4, j+6, j+8]] = 0
+
                     putdown_updown_fiveplate(
                         new_point, myservo8, myservo9, myservo10, myservo11, myservo12, count_palte, j, i)
-
+# 回程
     with open('/home/showmay/Desktop/simulatoer_test/move_zero_result.txt', 'r') as x:
         line = x.readlines()
         final_X = line[0]
